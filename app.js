@@ -134,10 +134,10 @@
     stopHeapMonitor();
     chunks = [];
     locked = false;
-    els.gaugeWrap.classList.remove("locked-ring");
+    setChip("released", "LIBÉRÉ");
+    if (els.gaugeWrap) els.gaugeWrap.classList.remove("locked-ring");
     setGauge(0);
     setBigValue(0);
-    setChip("released", "LIBÉRÉ");
     els.dot.className = "dot";
     renderChips();
     setStatus("Mémoire libérée : 0 octet réservé par cet onglet. La page est redevenue légère.");
@@ -174,7 +174,7 @@
     setChip("arming", "ARMEMENT…");
     els.dot.className = "dot armed";
     setStatus("Réservation de " + core.formatFr(targetBytes) + " octets… écriture de chaque octet en mémoire (memset).");
-    els.gaugeWrap.classList.remove("locked-ring");
+    if (els.gaugeWrap) els.gaugeWrap.classList.remove("locked-ring");
     renderChips();
 
     try {
@@ -200,7 +200,7 @@
 
       locked = true;
       running = false;
-      els.gaugeWrap.classList.add("locked-ring");
+      if (els.gaugeWrap) els.gaugeWrap.classList.add("locked-ring");
       els.dot.className = "dot locked";
       setGauge(1);
       setBigValue(targetBytes);
