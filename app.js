@@ -7,7 +7,7 @@
   var core = (typeof globalThis !== "undefined" && globalThis.MemoryLock) || window.MemoryLock;
   var MIB = core.MIB;
   var DEFAULT_MO = 1024; // ← cible par défaut en Mo. Changez ce chiffre (512 = 512 Mo, 2048 = 2 Go…).
-  var MAX_MO = 1048576;  // plafond : 1 To (1048576 Mo). Au-delà, la valeur est ignorée (garde anti-faute de frappe).
+  var MAX_MO = 65536;    // plafond : 64 Go (65536 Mo). Au-delà, la valeur est ignorée (garde anti-faute de frappe).
 
   var chunks = [];   // tampons conservés volontairement (référence globale)
   var running = false;
