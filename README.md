@@ -1,20 +1,20 @@
-# crash(500) 💣
+# crash(1 Go) 💣
 
-Ce site réserve **exactement 500 Mo (524 288 000 octets = 500 × 1024 × 1024)** de mémoire dès qu’on l’ouvre dans un navigateur — sans clic, sans serveur, sans build.
+Ce site réserve **exactement 1 Go (1 073 741 824 octets = 1024 × 1024 × 1024)** de mémoire dès qu’on l’ouvre dans un navigateur — sans clic, sans serveur, sans build.
 
 ## Comment c’est fait
 
 | Étape | Détail |
 |---|---|
-| Réservation | Des `ArrayBuffer` couvrant exactement 524 288 000 octets sont alloués (`core.js`) |
+| Réservation | Des `ArrayBuffer` couvrant exactement 1 073 741 824 octets sont alloués (`core.js`) |
 | Écriture | Chaque octet est rempli (`memset`) → la mémoire est réellement consommée par le processus, pas seulement réservée virtuellement |
 | Maintien | Les tampons sont gardés par référence globale → le ramasse-miettes ne peut rien libérer |
 | Preuve | Taille totale vérifiée + relecture de 512 échantillons aléatoires |
 | Libération | Fermeture de l’onglet, ou bouton « Libérer la mémoire » |
 
-**« Exact »** signifie que l’allocation fait précisément 524 288 000 octets. Les compteurs du navigateur
+**« Exact »** signifie que l’allocation fait précisément 1 073 741 824 octets. Les compteurs du navigateur
 (Gestionnaire des tâches, `performance.memory`) ajoutent le poids du moteur JS (quelques Mo) :
-ils afficheront ≈ 500 Mo ou un peu plus, jamais moins.
+ils afficheront ≈ 1 Go ou un peu plus, jamais moins.
 
 ## Vérifier soi-même
 
@@ -22,7 +22,8 @@ Chrome → `⋮` → **Plus d’outils** → **Gestionnaire des tâches** → co
 
 ## Personnalisation
 
-- `?mo=256` dans l’URL → réserve 256 Mo au lieu de 500 (utile sur petit appareil).
+- `?mo=256` dans l’URL → réserve 256 Mo au lieu de 1 Go (utile sur petit appareil).
+- `?mo=2048` → 2 Go, etc. (plafond : 16384 Mo).
 
 ## Déployer sur Vercel
 

@@ -1,4 +1,4 @@
-/* crash(500) — core.js : logique pure de réservation mémoire (testable hors navigateur) */
+/* crash(1 Go) — core.js : logique pure de réservation mémoire (testable hors navigateur) */
 (function (root, factory) {
   const api = factory();
   if (typeof module === "object" && module.exports) {
@@ -72,7 +72,7 @@
     return { ok: mismatches === 0, samplesRead: count, mismatches: mismatches };
   }
 
-  /** Formatage fr-FR : 524 288 000 */
+  /** Formatage fr-FR : 1 073 741 824 */
   function formatFr(n) {
     try {
       return new Intl.NumberFormat("fr-FR").format(n);

@@ -1,10 +1,10 @@
-/* crash(500) — app.js : interface (réservation automatique de 500 Mo à l'ouverture) */
+/* crash(1 Go) — app.js : interface (réservation automatique de 1 Go à l'ouverture) */
 (function () {
   "use strict";
 
   var core = (typeof globalThis !== "undefined" && globalThis.MemoryLock) || window.MemoryLock;
   var MIB = core.MIB;
-  var DEFAULT_MO = 500;
+  var DEFAULT_MO = 1024; // 1024 Mo = 1 Go = 1 073 741 824 octets
   var GLOBAL = 703.7; // longueur du cercle de jauge (2π × 112)
 
   /* ---------- état ---------- */
@@ -23,6 +23,7 @@
     targetMoText: $("targetMoText"),
     targetBytesText: $("targetBytesText"),
     gaugeValue: $("gaugeValue"),
+    gaugeUnit: $("gaugeUnit"),
     gaugeRing: $("gaugeRing"),
     gaugeWrap: $("gaugeWrap"),
     stateChip: $("stateChip"),
@@ -34,6 +35,12 @@
 
   /* ---------- cible ---------- */
 
+  // « 1024 Mo » s’affiche « 1 Go » (et « 2048 Mo » → « 2 Go ») ; sinon en Mo.
+  function moLabel(mo) {
+    if (mo >= 1024 && mo % 1024 === 0) return core.formatFr(mo / 1024) + " Go";
+    return core.formatFr(mo) + " Mo";
+  }
+
   function readTarget() {
     var mo = DEFAULT_MO;
     try {
@@ -42,7 +49,7 @@
       if (Number.isFinite(p) && p >= 1 && p <= 16384) mo = p;
     } catch (e) { /* pas de query string : valeur par défaut */ }
     targetBytes = mo * MIB;
-    els.targetMoText.textContent = core.formatFr(mo) + " Mo";
+    els.targetMoText.textContent = moLabel(mo);
     els.targetBytesText.textContent = core.formatFr(targetBytes) + " octets";
   }
 
@@ -107,8 +114,14 @@
 
   function setBigValue(bytes) {
     var mo = bytes / MIB;
-    var text = mo >= 100 ? String(Math.round(mo)) : mo.toFixed(1).replace(".", ",");
-    els.gaugeValue.textContent = text;
+    if (mo >= 1024) {
+      // Affichage en Go dès qu’on dépasse 1024 Mo.
+      els.gaugeValue.textContent = mo % 1024 === 0 ? String(mo / 1024) : (mo / 1024).toFixed(1).replace(".", ",");
+      els.gaugeUnit.textContent = "Go";
+    } else {
+      els.gaugeValue.textContent = mo >= 100 ? String(Math.round(mo)) : mo.toFixed(1).replace(".", ",");
+      els.gaugeUnit.textContent = "Mo";
+    }
   }
 
   function tick() {
@@ -142,7 +155,7 @@
     renderChips();
     setStatus("Mémoire libérée : 0 octet réservé par cet onglet. La page est redevenue légère.");
     setButtons();
-    document.title = "crash(500) — mémoire libérée";
+    document.title = "crash(1 Go) — mémoire libérée";
   }
 
   function startHeapMonitor() {
@@ -207,10 +220,10 @@
       setChip("locked", "VERROUILLÉ");
       setStatus(
         "✓ Verrou armé : exactement " + core.formatFr(targetBytes) + " octets (" +
-        (targetBytes / MIB).toLocaleString("fr-FR") + " Mo) sont réservés et écrits par cet onglet. " +
+        moLabel(Math.round(targetBytes / MIB)) + ") sont réservés et écrits par cet onglet. " +
         "La mémoire restera consommée jusqu’à la fermeture de l’onglet ou la libération manuelle."
       );
-      document.title = "crash(500) · verrou armé — " + Math.round(targetBytes / MIB) + " Mo";
+      document.title = "crash(1 Go) · verrou armé — " + moLabel(Math.round(targetBytes / MIB));
       renderChips();
       startHeapMonitor();
       setButtons();
@@ -224,7 +237,7 @@
       setChip("failed", "ÉCHEC");
       renderChips();
       setStatus(
-        "✗ Impossible de réserver " + Math.round(targetBytes / MIB) + " Mo sur cet appareil (" +
+        "✗ Impossible de réserver " + moLabel(Math.round(targetBytes / MIB)) + " sur cet appareil (" +
         (err && err.message ? err.message : "erreur d’allocation") + "). " +
         "Essayez une cible plus petite, par exemple ?mo=256 dans l’URL."
       );
