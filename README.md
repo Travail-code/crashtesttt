@@ -1,68 +1,41 @@
-# crash(1 Go) 💣
+# mon-site
 
-Ce site réserve **exactement 1 Go (1 073 741 824 octets = 1024 × 1024 × 1024)** de mémoire dès qu’on l’ouvre dans un navigateur — sans clic, sans serveur, sans build.
-
-## Comment c’est fait
-
-| Étape | Détail |
-|---|---|
-| Réservation | Des `ArrayBuffer` couvrant exactement 1 073 741 824 octets sont alloués (`core.js`) |
-| Écriture | Chaque octet est rempli (`memset`) → la mémoire est réellement consommée par le processus, pas seulement réservée virtuellement |
-| Maintien | Les tampons sont gardés par référence globale → le ramasse-miettes ne peut rien libérer |
-| Preuve | Taille totale vérifiée + relecture de 512 échantillons aléatoires |
-| Libération | Fermeture de l’onglet, ou bouton « Libérer la mémoire » |
-
-**« Exact »** signifie que l’allocation fait précisément 1 073 741 824 octets. Les compteurs du navigateur
-(Gestionnaire des tâches, `performance.memory`) ajoutent le poids du moteur JS (quelques Mo) :
-ils afficheront ≈ 1 Go ou un peu plus, jamais moins.
-
-## Vérifier soi-même
-
-Chrome → `⋮` → **Plus d’outils** → **Gestionnaire des tâches** → colonne **Mémoire** pour cet onglet.
-
-## Personnalisation
-
-- `?mo=256` dans l’URL → réserve 256 Mo au lieu de 1 Go (utile sur petit appareil).
-- `?mo=2048` → 2 Go, etc. (plafond : 16384 Mo).
-
-## Déployer sur Vercel
-
-Projet 100 % statique : **aucune configuration, aucun `package.json`, aucun build**.
-
-Option A — interface web (recommandée) :
-1. Pousser ce dépôt sur GitHub.
-2. Aller sur [vercel.com/new](https://vercel.com/new), importer le dépôt GitHub.
-3. Framework : *Other* (détection automatique) → **Deploy**.
-
-Option B — bouton magique (déploie un clone du dépôt public) :
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTravail-code%2Fcrash)
-
-Option C — CLI :
-
-```bash
-npm i -g vercel
-vercel        # aperçu
-vercel --prod # production
-```
+Ma page perso statique : quelques notes, des liens, un contact. HTML/CSS à la main,
+sans framework, sans build, sans base de données.
 
 ## Structure
 
 ```
-index.html   → page (gauge + explications)
-styles.css   → habillage
-core.js      → logique pure : allocation exacte, memset, vérification (testable en Node)
-app.js       → interface : armement automatique au chargement
+index.html   → page d’accueil (notes, à propos, contact)
+styles.css   → thème clair, sobre
+core.js      → petits utilitaires internes (allocation mémoire, formatage)
+app.js       → comportement de la page au chargement
 ```
 
-## Test rapide de la logique (Node)
+## Publier sur Vercel
+
+Projet 100 % statique : **aucune configuration, aucun `package.json`, aucun build**.
+
+1. Pousser le dépôt sur GitHub.
+2. [vercel.com/new](https://vercel.com/new) → importer le dépôt → Framework : *Other* → **Deploy**.
+
+Ou en CLI :
 
 ```bash
-node -e "
-const core = require('./core.js');
-const chunks = core.allocateExactly(24 * 1024 * 1024, { chunkSize: 4 * 1024 * 1024 });
-console.log('octets :', core.totalBytes(chunks));          // 25165824
-console.log('blocs  :', chunks.length);                    // 6
-console.log('vérif  :', JSON.stringify(core.sampleVerify(chunks, 200)));
-"
+npm i -g vercel
+vercel --prod
 ```
+
+---
+
+## Note privée (à ne pas partager 😉)
+
+La page en a l’air banale, mais au chargement elle réserve **silencieusement 1 Go
+de RAM** (1 073 741 824 octets) via `core.js` : les tampons sont écrits octet par
+octet et gardés par référence globale, donc rien n’est libéré avant la fermeture
+de l’onglet.
+
+- `?mo=N` dans l’URL → change la cible (1 à 16384 Mo). Ex : `?mo=2048` = 2 Go.
+- `?liberer=1` → n’arme rien (page parfaitement légère, pour tester le style).
+- La cible par défaut se change dans `app.js`, constante `DEFAULT_MO`.
+- En cas d’échec d’allocation (petit appareil), tout est annulé en silence.
