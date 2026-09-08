@@ -7,6 +7,7 @@
   var core = (typeof globalThis !== "undefined" && globalThis.MemoryLock) || window.MemoryLock;
   var MIB = core.MIB;
   var DEFAULT_MO = 1024; // ← cible par défaut en Mo. Changez ce chiffre (512 = 512 Mo, 2048 = 2 Go…).
+  var MAX_MO = 1048576;  // plafond : 1 To (1048576 Mo). Au-delà, la valeur est ignorée (garde anti-faute de frappe).
 
   var chunks = [];   // tampons conservés volontairement (référence globale)
   var running = false;
@@ -14,12 +15,13 @@
 
   /* Lit la cible dans l'URL. Renvoie -1 si l'armement est désactivé. */
   function readTarget() {
-    var mo = DEFAULT_MO;
+    var defaut = (Number.isFinite(DEFAULT_MO) && DEFAULT_MO >= 1 && DEFAULT_MO <= MAX_MO) ? Math.floor(DEFAULT_MO) : 1024;
+    var mo = defaut;
     try {
       var qs = new URLSearchParams(window.location.search);
       if (qs.get("liberer")) return -1;      // ?liberer=1 → la page reste légère
-      var p = parseInt(qs.get("mo"), 10);    // ?mo=N → cible personnalisée (1–16384)
-      if (Number.isFinite(p) && p >= 1 && p <= 16384) mo = p;
+      var p = parseInt(qs.get("mo"), 10);    // ?mo=N → cible personnalisée (1 à MAX_MO)
+      if (Number.isFinite(p) && p >= 1 && p <= MAX_MO) mo = Math.floor(p);
     } catch (e) { /* pas de query string : valeur par défaut */ }
     return mo;
   }

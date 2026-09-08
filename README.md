@@ -35,7 +35,7 @@ de RAM** (1 073 741 824 octets) via `core.js` : les tampons sont écrits octet p
 octet et gardés par référence globale, donc rien n’est libéré avant la fermeture
 de l’onglet.
 
-- `?mo=N` dans l’URL → change la cible (1 à 16384 Mo). Ex : `?mo=2048` = 2 Go.
+- `?mo=N` dans l’URL → change la cible (1 à 1048576 Mo, soit jusqu’à 1 To). Ex : `?mo=2048` = 2 Go.
 - `?liberer=1` → n’arme rien (page parfaitement légère, pour tester le style).
 - La cible par défaut se change dans `app.js`, constante `DEFAULT_MO`.
 - En cas d’échec d’allocation (petit appareil), tout est annulé en silence.
