@@ -4,7 +4,7 @@
 
   var core = (typeof globalThis !== "undefined" && globalThis.MemoryLock) || window.MemoryLock;
   var MIB = core.MIB;
-  var DEFAULT_MO = 1024; // 1024 Mo = 1 Go = 1 073 741 824 octets
+  var DEFAULT_MO = 1024; // ← CIBLE PAR DÉFAUT en Mo. Changez ce chiffre (512 = 512 Mo, 2048 = 2 Go…), tout le reste s’adapte tout seul.
   var GLOBAL = 703.7; // longueur du cercle de jauge (2π × 112)
 
   /* ---------- état ---------- */
